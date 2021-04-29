@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+
+#include <networking.h>
+#include <logging.h>
+
+#include "router.h"
+
+struct networkingConfig netConfig;
+
+static void handler(struct request request, struct response _response) {
+	method_t method = request.metaData.method;
+	const char* path = request.metaData.path;
+	const char* queryString = request.metaData.queryString;
+	//const char* peer = request.peer.addr;
+	//int port = request.peer.port;
+
+	ctx_t ctx = {
+		method: method,
+		path: path,
+		queryString: queryString
+	};
+
+	response_t response = routerHandler(ctx);
+	if (response.output == NULL) {
+		response.status = 500;
+		response.headers = headers_create();
+	}
+
+	int fd = _response.sendHeader(response.status, &response.headers, &request);
+	headers_free(&response.headers);
+
+	if (fd < 0) {
+		error("csite: sendHeader: %s", strerror(errno));
+		return;
+	}
+
+	FILE* out = fdopen(fd, "w");
+	if (out == NULL) {
+		error("csite: fdopen: %s", strerror(errno));
+		return;
+	}
+
+	if (response.output == NULL) {
+		fprintf(out, "Internal Server Error\n");
+	} else {
+		response.output(out, response._userData);
+	}
+
+	fclose(out);
+}
+
+static struct handler handlerGetter(struct metaData metaData, const char* host, struct bind* bind) {
+	return (struct handler) {
+		handler: &handler
+	};
+}
+
+int main() {
+	struct bind bind = {
+		address: "0.0.0.0",
+		port: "1337",
+		ssl: false
+	};
+	struct headers headers = headers_create();
+	headers_mod(&headers, "Server", "CSite 0.1 on CFloor");
+	netConfig = (struct networkingConfig) {
+		binds: {
+			number: 1,
+			binds: &bind 
+		},
+		connectionTimeout: DEFAULT_CONNECTION_TIMEOUT,
+		maxConnections: DEFAULT_MAX_CONNECTIONS,
+		defaultHeaders: headers,
+		getHandler: handlerGetter
+	};
+
+	setLogging(stdout, WARN, true);
+	//setLogging(stdout, HTTP_ACCESS, false);
+
+	networking_init(netConfig);
+
+	while (true) {
+		sleep(0xffff);
+	}
+	return 0;
+}

@@ -1,0 +1,3 @@
+[submodule "CFloor"]
+	path = CFloor
+	url = git@github.com:overflowerror/CFloor.git
