@@ -107,7 +107,7 @@ int registerRoute(method_t method, const char* path, handle_t* handle) {
 response_t routerHandler(ctx_t ctx) {
 	struct route* route = findRoute(ctx.method, ctx.path);
 	if (route == NULL) {
-		return rawResponse(404, "Not Found\n");
+		return errorResponse(404, "no route found");
 	}
 	
 	return route->handle(ctx);

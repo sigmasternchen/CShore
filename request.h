@@ -12,6 +12,8 @@ typedef struct {
 	method_t method;
 	const char* path;
 	const char* queryString;
+	const char* peerAddr;
+	int peerPort;
 } ctx_t;
 
 typedef struct {
@@ -22,7 +24,16 @@ typedef struct {
 	void (*output) (FILE* conenction, void* _userData);
 } response_t;
 
+typedef enum {
+	RAW,
+	JSON
+} errorformat_t;
+
+void setDefaultErrorFormat(errorformat_t format);
+
 response_t emptyResponse();
+
+response_t errorResponse(int status, const char* message);
 
 response_t rawResponse(int status, const char* txt);
 

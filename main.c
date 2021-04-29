@@ -13,22 +13,17 @@
 struct networkingConfig netConfig;
 
 static void handler(struct request request, struct response _response) {
-	method_t method = request.metaData.method;
-	const char* path = request.metaData.path;
-	const char* queryString = request.metaData.queryString;
-	//const char* peer = request.peer.addr;
-	//int port = request.peer.port;
-
 	ctx_t ctx = {
-		method: method,
-		path: path,
-		queryString: queryString
+		method: request.metaData.method,
+		path: request.metaData.path,
+		queryString: request.metaData.queryString,
+		peerAddr: request.peer.addr,
+		peerPort: request.peer.port
 	};
 
 	response_t response = routerHandler(ctx);
 	if (response.output == NULL) {
-		response.status = 500;
-		response.headers = headers_create();
+		response = errorResponse(500, "route did not provide a reponse handler");
 	}
 
 	int fd = _response.sendHeader(response.status, &response.headers, &request);
@@ -45,11 +40,7 @@ static void handler(struct request request, struct response _response) {
 		return;
 	}
 
-	if (response.output == NULL) {
-		fprintf(out, "Internal Server Error\n");
-	} else {
-		response.output(out, response._userData);
-	}
+	response.output(out, response._userData);
 
 	fclose(out);
 }
