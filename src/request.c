@@ -12,7 +12,6 @@
 
 #include <json.h>
 
-
 #include "request.h"
 
 response_t emptyResponse() {

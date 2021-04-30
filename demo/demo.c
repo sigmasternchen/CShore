@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "controller.h"
+#include <controller.h>
 
 
 GET("/", hello);
@@ -12,5 +12,5 @@ response_t hello(ctx_t ctx) {
 
 GET("/foobar", foobar);
 response_t foobar(ctx_t ctx) {
-	return fileResponse("foobar.txt");
+	return fileResponse("demo/foobar.txt");
 }
