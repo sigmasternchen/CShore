@@ -60,7 +60,7 @@ int main() {
 		ssl: false
 	};
 	struct headers headers = headers_create();
-	headers_mod(&headers, "Server", "CSite 0.1 on CFloor");
+	headers_mod(&headers, "Server", "CShore 0.1");
 	netConfig = (struct networkingConfig) {
 		binds: {
 			number: 1,
