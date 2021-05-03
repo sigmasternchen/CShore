@@ -33,6 +33,7 @@ void setDefaultErrorFormat(errorformat_t format);
 
 response_t emptyResponse();
 
+response_t statusResponse(int status, const char* message);
 response_t errorResponse(int status, const char* message);
 
 response_t rawResponse(int status, const char* txt);

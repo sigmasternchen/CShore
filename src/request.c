@@ -28,13 +28,13 @@ void setDefaultErrorFormat(errorformat_t format) {
 	errorformat = format;
 }
 
-void _rawOutputAndFree(FILE* out, void* _userData, ctx_t ctx) {
+static void rawOutputAndFree(FILE* out, void* _userData, ctx_t ctx) {
 	fprintf(out, "%s", (char*) _userData);
 	
 	free(_userData);
 }
 
-void _rawOutput(FILE* out, void* _userData, ctx_t ctx) {
+static void rawOutput(FILE* out, void* _userData, ctx_t ctx) {
 	fprintf(out, "%s", (const char*) _userData);
 }
 
@@ -51,9 +51,9 @@ response_t _rawResponse(int status, char* txt, bool free) {
 	response._userData = (void*) txt;
 	
 	if (free) {
-		response.output = _rawOutputAndFree;
+		response.output = rawOutputAndFree;
 	} else {
-		response.output = _rawOutput;
+		response.output = rawOutput;
 	}
 	return response;
 }
@@ -62,38 +62,68 @@ response_t rawResponse(int status, const char* txt) {
 	return _rawResponse(status, (char*) txt, false);
 }
 
-response_t errorResponse(int status, const char* message) {
-	const char* statusString = getStatusStrings(status).statusString;
-	
+struct statusdata {
+	int status;
+	const char* message;
+};
+
+static void statusOutput(FILE* out, void* _userData, ctx_t ctx) {
+		struct statusdata* data = (struct statusdata*) _userData;
+		
+		const char* statusString = getStatusStrings(data->status).statusString;
+		char* tmp = getTimestamp();
+		jsonValue_t* json = json_object(true, 5,
+			"timestamp", json_string(tmp),
+			"status", json_long(data->status),
+			"error", json_string(statusString),
+			"message", json_string(data->message),
+			"path", json_string(ctx.path)
+		);
+		free(data);
+		free(tmp);
+		tmp = json_stringify(json);
+		json_free(json);
+		fputs(tmp, out);
+		free(tmp);
+}
+
+response_t statusResponse(int status, const char* message) {
 	if (message == NULL) {
 		message = "";
 	}
 	
 	char* tmp;
+	const char* statusString;
+	struct statusdata* data;
 	switch(errorformat) {
 		case RAW:
+			statusString = getStatusStrings(status).statusString;
 			tmp = malloc(strlen(statusString) + 1 + strlen(message) + 1);
 			sprintf(tmp, "%s\n%s", statusString, message);
 			return _rawResponse(status, tmp, true);
 		case JSON:
-			tmp = getTimestamp();
-			jsonValue_t* json = json_object(true, 5,
-				"timestamp", json_string(tmp),
-				"status", json_long(status),
-				"error", json_string(statusString),
-				"message", json_string(message),
-				"path", json_string("not yet implemented")
-			);
-			free(tmp);
-			tmp = json_stringify(json);
-			json_free(json);
-			return _rawResponse(status, tmp, true);
+			data = malloc(sizeof(struct statusdata));
+			if (data == NULL) {
+				return rawResponse(500, "Internal Server Error\ncouldn't prepare status message");
+			}
+			data->status = status;
+			data->message = message;
+			
+			response_t response = emptyResponse();
+			response.status = status;
+			response._userData = data;
+			response.output = statusOutput;
+			
+			return response;
 		default:
 			return rawResponse(500, "Internel Server Error\nunknown error format");
 	}
 }
+response_t errorResponse(int status, const char* message) {
+	return statusResponse(status, message);
+}
 
-void _fileOutput(FILE* out, void* _userData, ctx_t ctx) {
+static void fileOutput(FILE* out, void* _userData, ctx_t ctx) {
 	FILE* in = (FILE*) _userData;
 
 	#define READ_BUFFER_SIZE (1024)
@@ -133,7 +163,7 @@ response_t fileResponse(const char* file) {
 
 	response.status = 200;
 	response._userData = stream;
-	response.output = _fileOutput;
+	response.output = fileOutput;
 
 	return response;
 }
