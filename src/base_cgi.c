@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
 	
 	headers_free(&response.headers);
 
-	response.output(stdout, response._userData);
+	response.output(stdout, response._userData, ctx);
 
 	return 0;
 }

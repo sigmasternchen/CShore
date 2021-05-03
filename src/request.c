@@ -28,13 +28,13 @@ void setDefaultErrorFormat(errorformat_t format) {
 	errorformat = format;
 }
 
-void _rawOutputAndFree(FILE* out, void* _userData) {
+void _rawOutputAndFree(FILE* out, void* _userData, ctx_t ctx) {
 	fprintf(out, "%s", (char*) _userData);
 	
 	free(_userData);
 }
 
-void _rawOutput(FILE* out, void* _userData) {
+void _rawOutput(FILE* out, void* _userData, ctx_t ctx) {
 	fprintf(out, "%s", (const char*) _userData);
 }
 
@@ -93,7 +93,7 @@ response_t errorResponse(int status, const char* message) {
 	}
 }
 
-void _fileOutput(FILE* out, void* _userData) {
+void _fileOutput(FILE* out, void* _userData, ctx_t ctx) {
 	FILE* in = (FILE*) _userData;
 
 	#define READ_BUFFER_SIZE (1024)

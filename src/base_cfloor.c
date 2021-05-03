@@ -42,7 +42,7 @@ static void handler(struct request request, struct response _response) {
 		return;
 	}
 
-	response.output(out, response._userData);
+	response.output(out, response._userData, ctx);
 
 	fclose(out);
 }
