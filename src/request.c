@@ -11,6 +11,7 @@
 #include <status.h>
 
 #include <json.h>
+#include <marshaller.h>
 
 #include "request.h"
 
@@ -165,5 +166,30 @@ response_t fileResponse(const char* file) {
 	response._userData = stream;
 	response.output = fileOutput;
 
+	return response;
+}
+
+static void jsonOutput(FILE* output, void* _userData, ctx_t ctx) {
+	jsonValue_t* json = (jsonValue_t*) _userData;
+	
+	char* result = json_stringify(json);
+	json_free(json);
+	
+	fprintf(output, "%s", result);
+	free(result);
+}
+
+response_t _jsonResponse(int status, const char* type, void* value) {
+	response_t response = emptyResponse();
+	
+	jsonValue_t* json = _json_marshall_value(type, value);
+	if (json == NULL) {
+		return statusResponse(500, strerror(errno));
+	}
+	
+	response.status = status;
+	response._userData = json;
+	response.output = jsonOutput;
+	
 	return response;
 }
