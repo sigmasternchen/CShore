@@ -39,7 +39,7 @@ $(CFLOOR_LIB):
 	$(MAKE) -C CFloor/ libcfloor.a
 	
 $(CSON_LIB):
-	$(MAKE) -C Cson/ marshaller-lib
+	$(MAKE) -C Cson/ libcson.a
 
 -include $(DEPS)
 
@@ -52,14 +52,14 @@ obj/%.o: src/%.c obj
 obj:
 	@mkdir -p obj
 	
-Cson/marshaller/marshaller-gen:
-	$(MAKE) -C Cson/marshaller/ marshaller-gen
+Cson/marshaller-gen:
+	$(MAKE) -C Cson/ marshaller-gen
 	
 obj/entities.tab.o: obj/entities.tab.c
 	$(CC) $(CFLAGS) -MMD -c -o $@ $<
 
-obj/entities.tab.c: demo/entities.h Cson/marshaller/marshaller-gen
-	./Cson/marshaller/marshaller-gen -o $@ $<
+obj/entities.tab.c: demo/entities.h Cson/marshaller-gen
+	./Cson/marshaller-gen -o $@ $<
 
 clean:
 	@echo "Cleaning up..."
