@@ -1,6 +1,6 @@
 CC = gcc
 LD = gcc
-CFLAGS = -Wall -g -std=c99 -ICFloor/src/ -ICson/src/ -ICson/marshaller/lib/ -D_POSIX_SOURCE -D_XOPEN_SOURCE=500
+CFLAGS = -Wall -g -std=c99 -ICFloor/src/ -ICson/src/ -D_POSIX_SOURCE -D_XOPEN_SOURCE=500
 LDFLAGS = -lpthread -lrt
 
 CFLOOR_LIB = CFloor/libcfloor.a
