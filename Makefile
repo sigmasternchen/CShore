@@ -1,11 +1,11 @@
 CC = gcc
 LD = gcc
-CFLAGS = -Wall -g -std=c99 -ICFloor/src/ -ICson/src/ -D_POSIX_SOURCE -D_XOPEN_SOURCE=500
+CFLAGS = -Wall -g -std=c99 -ICFloor/src/ -Ilibargo/src/ -D_POSIX_SOURCE -D_XOPEN_SOURCE=500
 LDFLAGS = -lpthread -lrt
 
 CFLOOR_LIB = CFloor/libcfloor.a
-CSON_LIB = Cson/libcson.a
-LIBS = $(CFLOOR_LIB) $(CSON_LIB)
+LIBARGO = Cson/libargo.a
+LIBS = $(CFLOOR_LIB) $(LIBARGO)
 
 OBJS = obj/router.o obj/request.o obj/base_cfloor.o obj/base_cgi.o
 DEPS = $(OBJS:%.o=%.d)
@@ -38,8 +38,8 @@ standalone: $(DEMO_OBJS) $(OBJS) $(LIBS)
 $(CFLOOR_LIB):
 	$(MAKE) -C CFloor/ libcfloor.a
 	
-$(CSON_LIB):
-	$(MAKE) -C Cson/ libcson.a
+$(LIBARGO):
+	$(MAKE) -C Cson/ libargo.a
 
 -include $(DEPS)
 
