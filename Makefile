@@ -4,7 +4,7 @@ CFLAGS = -Wall -g -std=c99 -ICFloor/src/ -Ilibargo/src/ -D_POSIX_SOURCE -D_XOPEN
 LDFLAGS = -lpthread -lrt
 
 CFLOOR_LIB = CFloor/libcfloor.a
-LIBARGO = Cson/libargo.a
+LIBARGO = libargo/libargo.a
 LIBS = $(CFLOOR_LIB) $(LIBARGO)
 
 OBJS = obj/router.o obj/request.o obj/base_cfloor.o obj/base_cgi.o
@@ -39,7 +39,7 @@ $(CFLOOR_LIB):
 	$(MAKE) -C CFloor/ libcfloor.a
 	
 $(LIBARGO):
-	$(MAKE) -C Cson/ libargo.a
+	$(MAKE) -C libargo/ libargo.a
 
 -include $(DEPS)
 
@@ -52,14 +52,14 @@ obj/%.o: src/%.c obj
 obj:
 	@mkdir -p obj
 	
-Cson/marshaller-gen:
-	$(MAKE) -C Cson/ marshaller-gen
+libargo/marshaller-gen:
+	$(MAKE) -C libargo/ marshaller-gen
 	
 obj/entities.tab.o: obj/entities.tab.c
 	$(CC) $(CFLAGS) -MMD -c -o $@ $<
 
-obj/entities.tab.c: demo/entities.h Cson/marshaller-gen
-	./Cson/marshaller-gen -o $@ $<
+obj/entities.tab.c: demo/entities.h libargo/marshaller-gen
+	./libargo/marshaller-gen -o $@ $<
 
 clean:
 	@echo "Cleaning up..."
@@ -68,4 +68,4 @@ clean:
 	@rm -f obj/*.c
 	@rm -f standalone
 	$(MAKE) -C CFloor/ clean
-	$(MAKE) -C Cson/ clean
+	$(MAKE) -C libargo/ clean
