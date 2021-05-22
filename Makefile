@@ -1,11 +1,12 @@
 CC = gcc
 LD = gcc
-CFLAGS = -Wall -g -std=c99 -ICFloor/src/ -Ilibargo/src/ -D_POSIX_SOURCE -D_XOPEN_SOURCE=500
+CFLAGS = -Wall -g -std=c99 -ICFloor/src/ -Ilibargo/src/ -Ilibparcival/src/ -D_POSIX_SOURCE -D_XOPEN_SOURCE=500
 LDFLAGS = -lpthread -lrt
 
 CFLOOR_LIB = CFloor/libcfloor.a
 LIBARGO = libargo/libargo.a
-LIBS = $(CFLOOR_LIB) $(LIBARGO)
+LIBPARCIVAL = libparcival/libparcival.a
+LIBS = $(CFLOOR_LIB) $(LIBARGO) $(LIBPARCIVAL)
 
 OBJS = obj/router.o obj/request.o obj/base_cfloor.o obj/base_cgi.o
 DEPS = $(OBJS:%.o=%.d)
@@ -40,6 +41,9 @@ $(CFLOOR_LIB):
 	
 $(LIBARGO):
 	$(MAKE) -C libargo/ libargo.a
+	
+$(LIBPARCIVAL):
+	$(MAKE) -C libparcival libparcival.a
 
 -include $(DEPS)
 
@@ -54,6 +58,9 @@ obj:
 	
 libargo/marshaller-gen:
 	$(MAKE) -C libargo/ marshaller-gen
+	
+libparcival/parcival:
+	$(MAKE) -C libparcival/ parcival
 	
 obj/entities.tab.o: obj/entities.tab.c
 	$(CC) $(CFLAGS) -MMD -c -o $@ $<

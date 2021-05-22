@@ -4,3 +4,6 @@
 [submodule "libargo"]
 	path = libargo
 	url = git@github.com:overflowerror/libargo.git
+[submodule "libparcival"]
+	path = libparcival
+	url = git@github.com:overflowerror/libparcival.git
