@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <alloca.h>
 #include <sys/stat.h>
+#include <stdarg.h>
 
 #include <headers.h>
 #include <util.h>
@@ -12,6 +13,7 @@
 
 #include <json.h>
 #include <marshaller.h>
+#include <templates.h>
 
 #include "request.h"
 
@@ -190,6 +192,63 @@ response_t _jsonResponse(int status, const char* type, void* value) {
 	response.status = status;
 	response._userData = json;
 	response.output = jsonOutput;
+	
+	return response;
+}
+
+extern size_t _sizeTemplate(const char*, ...);
+extern void _renderTemplate(const char*, FILE*, ...);
+
+response_t templateResponse(int status, const char* name, ...) {
+	response_t response = emptyResponse();
+	
+	size_t length;
+	char* buffer;
+	
+	va_list argptr, argptr2;
+	va_start(argptr, name);
+	va_copy(argptr2, argptr);
+	
+	length = _sizeTemplate(name, argptr);
+	
+	va_end(argptr);
+	
+	buffer = malloc(length + 1);
+	if (buffer == NULL) {
+		va_end(argptr2);
+		return statusResponse(500, strerror(errno));
+	}
+	
+	FILE* out = fmemopen(buffer, length + 1, "w");
+	if (out == NULL) {
+		va_end(argptr2);
+		return statusResponse(500, strerror(errno));
+	}
+	
+	_renderTemplate(name, out, argptr2);
+	fclose(out);
+	
+	va_end(argptr2);
+	
+	buffer[length] = '\0';
+	
+	response.status = status;
+	response._userData = buffer;
+	response.output = rawOutputAndFree;
+	
+	printf("%s\n", buffer + 100);
+	printf("%zd - %zd\n", length, strlen(buffer));
+	
+	size_t tmpLength = snprintf(NULL, 0, "%zd", length);
+	char* tmp = malloc(tmpLength + 1);
+	if (tmp != NULL) {
+		snprintf(tmp, tmpLength + 1, "%zd", length);
+		headers_mod(&response.headers, "Content-Length", tmp);
+		free(tmp);
+	} else {
+		// not a huge deal
+		// CFloor should be able to deal with a missing content-length header
+	}
 	
 	return response;
 }

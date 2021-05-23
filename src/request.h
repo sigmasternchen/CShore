@@ -43,4 +43,6 @@ response_t fileResponse(const char* file);
 response_t _jsonResponse(int status, const char* type, void* value);
 #define jsonResponse(s, t, v) _jsonResponse(s, # t, v)
 
+response_t templateResponse(int status, const char* name, ...);
+
 #endif
