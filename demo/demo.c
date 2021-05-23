@@ -26,3 +26,8 @@ response_t user(ctx_t ctx) {
 
 	return jsonResponse(200, user_t, &user);
 }
+
+GET("/template", template);
+response_t template(ctx_t ctx) {
+	return templateResponse(200, "demo.templ", "Page Title", "Overflow");
+}
