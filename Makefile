@@ -1,6 +1,6 @@
 CC = gcc
 LD = gcc
-CFLAGS = -Wall -g -std=c99 -ICFloor/src/ -Ilibargo/src/ -Ilibparcival/src/ -D_POSIX_SOURCE -D_XOPEN_SOURCE=500
+CFLAGS = -Wall -g -std=c99 -ICFloor/src/ -Ilibargo/src/ -Ilibparcival/src/ -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500
 LDFLAGS = -lpthread -lrt
 
 CFLOOR_LIB = CFloor/libcfloor.a
@@ -11,7 +11,7 @@ LIBS = $(CFLOOR_LIB) $(LIBARGO) $(LIBPARCIVAL)
 OBJS = obj/router.o obj/request.o obj/base_cfloor.o obj/base_cgi.o
 DEPS = $(OBJS:%.o=%.d)
 
-DEMO_OBJS = obj/demo.o obj/entities.tab.o
+DEMO_OBJS = obj/demo.o obj/entities.tab.o obj/template.tab.o
 
 HAS_MAIN =
 NEEDS_MAIN = \
@@ -68,6 +68,12 @@ obj/entities.tab.o: obj/entities.tab.c
 obj/entities.tab.c: demo/entities.h libargo/marshaller-gen
 	./libargo/marshaller-gen -o $@ $<
 
+obj/template.tab.o: obj/template.tab.c
+	$(CC) $(CFLAGS) -MMD -c -o $@ $<
+	
+obj/template.tab.c: demo/demo.templ libparcival/parcival
+	cd demo && ../libparcival/parcival demo.templ > ../$@
+
 clean:
 	@echo "Cleaning up..."
 	@rm -f obj/*.o
@@ -76,3 +82,4 @@ clean:
 	@rm -f standalone
 	$(MAKE) -C CFloor/ clean
 	$(MAKE) -C libargo/ clean
+	$(MAKE) -C libparcival/ clean
