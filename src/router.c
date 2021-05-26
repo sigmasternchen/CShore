@@ -2,16 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 #include "router.h"
 
 
 #define MAX_ROUTES (128)
+#define MAX_HANDLERS (8)
 
 struct route {
 	method_t method;
 	const char* path;
-	handle_t* handle;
+	handle_t* handlers[MAX_HANDLERS + 1];
 } routes[MAX_ROUTES];
 int n = 0;
 
@@ -86,7 +88,7 @@ struct route* reverseFindRoute(method_t method, const char* path) {
 	return NULL;
 }
 
-int registerRoute(method_t method, const char* path, handle_t* handle) {
+int registerRoute(method_t method, const char* path, ...) {
 	if (n >= MAX_ROUTES) {
 		return -1;
 	}
@@ -95,11 +97,26 @@ int registerRoute(method_t method, const char* path, handle_t* handle) {
 		return -2;
 	}
 		
-	routes[n++] = (struct route) {
+	struct route route = {
 		method: method,
-		path: path,
-		handle: handle
+		path: path
 	};
+	
+	va_list argptr;
+	va_start(argptr, path);
+	
+	int i;
+	for(i = 0; i < MAX_HANDLERS; i++) {
+		route.handlers[i] = va_arg(argptr, handle_t*);
+		if (route.handlers[i] == NULL) {
+			break;
+		}
+	}
+	route.handlers[i] = NULL;
+	
+	va_end(argptr);
+	
+	routes[n++] = route;
 	
 	return 0;
 }
@@ -110,5 +127,12 @@ response_t routerHandler(ctx_t ctx) {
 		return errorResponse(404, "no route found");
 	}
 	
-	return route->handle(ctx);
+	for(int i = 0; route->handlers[i] != NULL; i++) {
+		response_t response = route->handlers[i](ctx);
+		if (response.status != NEXT_RESPONSE_STATUS) {
+			return response;
+		}
+	}
+	
+	return errorResponse(500, "no handler produced valid response");
 }

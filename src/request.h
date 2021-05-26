@@ -8,6 +8,8 @@
 
 #include "common.h"
 
+#define NEXT_RESPONSE_STATUS (0)
+
 typedef struct {
 	method_t method;
 	const char* path;
@@ -32,6 +34,8 @@ typedef enum {
 void setDefaultErrorFormat(errorformat_t format);
 
 response_t emptyResponse();
+
+response_t next();
 
 response_t statusResponse(int status, const char* message);
 response_t errorResponse(int status, const char* message);

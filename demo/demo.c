@@ -17,7 +17,11 @@ response_t foobar(ctx_t ctx) {
 	return fileResponse("demo/foobar.txt");
 }
 
-GET("/user", user);
+response_t authenticate(ctx_t ctx) {
+	return next();
+}
+
+GET("/user", authenticate, user);
 response_t user(ctx_t ctx) {
 	user_t user = {
 		.username = "overflowerror",

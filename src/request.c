@@ -252,3 +252,9 @@ response_t templateResponse(int status, const char* name, ...) {
 	
 	return response;
 }
+
+response_t next() {
+	response_t response = emptyResponse();
+	response.status = NEXT_RESPONSE_STATUS;
+	return response;
+}
