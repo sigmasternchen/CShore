@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <stdio.h>
+#include <string.h>
 
 #include <controller.h>
 
@@ -18,6 +18,18 @@ response_t foobar(ctx_t ctx) {
 }
 
 response_t authenticate(ctx_t ctx) {
+	if (ctx.auth.type != BASIC) {
+		return basicAuthResponse(401, "Protected Area");
+	}
+	
+	if (strcmp(ctx.auth.basic.user, "admin") != 0 ||
+	    strcmp(ctx.auth.basic.password, "password") != 0
+	) {
+		// username or password wrong
+		return basicAuthResponse(401, "Protected Area");
+	}
+	
+
 	return next();
 }
 

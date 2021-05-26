@@ -8,7 +8,7 @@ LIBARGO = libargo/libargo.a
 LIBPARCIVAL = libparcival/libparcival.a
 LIBS = $(CFLOOR_LIB) $(LIBARGO) $(LIBPARCIVAL)
 
-OBJS = obj/router.o obj/request.o obj/base_cfloor.o obj/base_cgi.o
+OBJS = obj/router.o obj/request.o obj/base_cfloor.o obj/base_cgi.o obj/auth.o obj/base64.o
 DEPS = $(OBJS:%.o=%.d)
 
 DEMO_OBJS = obj/demo.o obj/entities.tab.o obj/template.tab.o

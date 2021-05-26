@@ -7,6 +7,7 @@
 #include <headers.h>
 
 #include "common.h"
+#include "auth.h"
 
 #define NEXT_RESPONSE_STATUS (0)
 
@@ -16,6 +17,7 @@ typedef struct {
 	const char* queryString;
 	const char* peerAddr;
 	int peerPort;
+	struct auth auth;
 } ctx_t;
 
 typedef struct {
@@ -36,6 +38,8 @@ void setDefaultErrorFormat(errorformat_t format);
 response_t emptyResponse();
 
 response_t next();
+
+response_t basicAuthResponse(int status, const char* realm);
 
 response_t statusResponse(int status, const char* message);
 response_t errorResponse(int status, const char* message);

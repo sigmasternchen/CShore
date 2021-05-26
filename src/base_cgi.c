@@ -104,21 +104,24 @@ int main(int argc, char** argv) {
 	}
 	
 	// TODO use request headers
-	
-	headers_free(&headers);
 
 	ctx_t ctx = {
 		method: getMethod(or(getenv("REQUEST_METHOD"), "GET")),
 		path: or(getenv("PATH_INFO"), "/"),
 		queryString: or(getenv("QUERY_STRING"), ""),
 		peerAddr: or(getenv("REMOTE_ADDR"), ""),
-		peerPort: 0 // TODO 
+		peerPort: 0, // TODO 
+		auth: getAuthData(request.headers)
 	};
+	
+	headers_free(&headers);
 
 	response_t response = routerHandler(ctx);
 	if (response.output == NULL) {
 		response = errorResponse(500, "route did not provide a reponse handler");
 	}
+	
+	freeAuthData(ctx.auth);
 
 	printf("Status: %d\n\r", response.status);
 	headers_dump(&response.headers, stdout);

@@ -11,7 +11,7 @@ static unsigned char inverseTable[256];
 __attribute__((constructor)) static void buildInverseTable() {
 	memset(inverseTable, 0x80, 256);
 
-	size_t tableLength = strlen(charTable);
+	size_t tableLength = strlen((const char*) charTable);
 	for (unsigned int i = 0; i < tableLength; i++) {
 		inverseTable[charTable[i]] = i;
 	}
@@ -52,9 +52,11 @@ char* base64_encode(const char* decoded) {
 	return encoded;
 }
 
-char* base64_decode(const char* encoded) {
-	size_t length = strlen(encoded);
+char* base64_decode(const char* _encoded) {
+	size_t length = strlen(_encoded);
 	size_t count = 0;
+	
+	unsigned const char* encoded = (unsigned char*) _encoded;
 	
 	for (size_t i = 0; i < length; i++) {
 		if (inverseTable[encoded[i]] != 0x80) {

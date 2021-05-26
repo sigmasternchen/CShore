@@ -258,3 +258,17 @@ response_t next() {
 	response.status = NEXT_RESPONSE_STATUS;
 	return response;
 }
+
+response_t basicAuthResponse(int status, const char* realm) {
+	response_t response = emptyResponse();
+	response.status = status;
+	response._userData = "";
+	response.output = rawOutput;
+	
+	size_t bufferLength = strlen(realm) + 14;
+	char buffer[bufferLength + 1];
+	snprintf(buffer, bufferLength + 1, "Basic realm=\"%s\"", realm);
+	headers_mod(&response.headers, "WWW-Authenticate", buffer);
+	
+	return response;
+}

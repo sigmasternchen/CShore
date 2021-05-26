@@ -11,6 +11,7 @@
 #include <logging.h>
 
 #include "router.h"
+#include "auth.h"
 
 struct networkingConfig netConfig;
 
@@ -20,13 +21,16 @@ static void handler(struct request request, struct response _response) {
 		path: request.metaData.path,
 		queryString: request.metaData.queryString,
 		peerAddr: request.peer.addr,
-		peerPort: request.peer.port
+		peerPort: request.peer.port,
+		auth: getAuthData(request.headers)
 	};
 
 	response_t response = routerHandler(ctx);
 	if (response.output == NULL) {
 		response = errorResponse(500, "route did not provide a reponse handler");
 	}
+	
+	freeAuthData(ctx.auth);
 
 	int fd = _response.sendHeader(response.status, &response.headers, &request);
 	headers_free(&response.headers);
