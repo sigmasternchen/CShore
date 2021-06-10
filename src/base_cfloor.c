@@ -22,7 +22,8 @@ static void handler(struct request request, struct response _response) {
 		queryString: request.metaData.queryString,
 		peerAddr: request.peer.addr,
 		peerPort: request.peer.port,
-		auth: getAuthData(request.headers)
+		auth: getAuthData(request.headers),
+		headers: *request.headers
 	};
 
 	response_t response = routerHandler(ctx);

@@ -18,6 +18,7 @@ typedef struct {
 	const char* peerAddr;
 	int peerPort;
 	struct auth auth;
+	struct headers headers;
 } ctx_t;
 
 typedef struct {
