@@ -196,8 +196,8 @@ response_t _jsonResponse(int status, const char* type, void* value) {
 	return response;
 }
 
-extern size_t _sizeTemplate(const char*, ...);
-extern void _renderTemplate(const char*, FILE*, ...);
+extern size_t _sizeTemplate(const char*, va_list);
+extern void _renderTemplate(const char*, FILE*, va_list);
 
 response_t templateResponse(int status, const char* name, ...) {
 	response_t response = emptyResponse();
