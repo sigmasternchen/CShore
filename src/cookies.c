@@ -38,15 +38,8 @@ char* getCookie(ctx_t ctx, const char* key) {
 	
 	if (value != NULL) {
 		value = strdup(value);
-		if (value == NULL) {
-			free(cookieHeader);
-			return NULL;
-		}
-		
-		free(cookieHeader);
-		return value;
-	} else {
-		free(cookieHeader);
-		return NULL;
 	}
+	
+	free(cookieHeader);
+	return value;
 }
