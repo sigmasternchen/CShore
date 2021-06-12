@@ -22,15 +22,16 @@ char* getCookie(ctx_t ctx, const char* key) {
 	
 	char* value = NULL;
 	
-	while((str = strtok_r(str, ";", saveptr)) != NULL) {
-		if (strncmp(str, key, keyLength) == 0) {
-			str = strtok_r(NULL, "=", saveptr)
-			if (str == NULL) {
-				// illegal cookie definition; ignore
-			} else {
-				value = str;
-				break;
-			}
+	while((str = strtok_r(str, "; ", saveptr)) != NULL) {
+		char* keyCandidate = str;
+		str = strtok_r(NULL, "=", saveptr);
+		if (str == NULL) {
+			// illegal cookie definition; ignore
+			continue;
+		}
+		
+		if (strcmp(keyCandidate, key) == 0) {
+			value = str;
 		}
 		
 		str = NULL;
