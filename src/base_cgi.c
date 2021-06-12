@@ -110,7 +110,8 @@ int main(int argc, char** argv) {
 		peerAddr: or(getenv("REMOTE_ADDR"), ""),
 		peerPort: 0, // TODO 
 		auth: getAuthData(request.headers),
-		headers: headers
+		requestHeaders: headers,
+		responseHeaders: headers_create()
 	};
 
 	response_t response = routerHandler(ctx);
@@ -119,13 +120,17 @@ int main(int argc, char** argv) {
 	}
 	
 	headers_free(&headers);
+	
+	headers_merge(&ctx.responseHeaders, &response.headers);
+	
 	freeAuthData(ctx.auth);
 
 	printf("Status: %d\n\r", response.status);
-	headers_dump(&response.headers, stdout);
+	headers_dump(&ctx.responseHeaders, stdout);
 	printf("\n\r");
 	
 	headers_free(&response.headers);
+	headers_free(&ctx.responseHeaders);
 
 	response.output(stdout, response._userData, ctx);
 

@@ -23,7 +23,8 @@ static void handler(struct request request, struct response _response) {
 		peerAddr: request.peer.addr,
 		peerPort: request.peer.port,
 		auth: getAuthData(request.headers),
-		headers: *request.headers
+		requestHeaders: *request.headers,
+		responseHeaders: headers_create()
 	};
 
 	response_t response = routerHandler(ctx);
@@ -32,9 +33,12 @@ static void handler(struct request request, struct response _response) {
 	}
 	
 	freeAuthData(ctx.auth);
+	
+	headers_merge(&ctx.responseHeaders, &response.headers);
 
-	int fd = _response.sendHeader(response.status, &response.headers, &request);
+	int fd = _response.sendHeader(response.status, &ctx.responseHeaders, &request);
 	headers_free(&response.headers);
+	headers_free(&ctx.responseHeaders);
 
 	if (fd < 0) {
 		error("csite: sendHeader: %s", strerror(errno));
