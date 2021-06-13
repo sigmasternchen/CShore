@@ -48,3 +48,20 @@ GET("/template", template);
 response_t template(ctx_t* ctx) {
 	return templateResponse(200, "demo.templ", "Page Title", "Overflow");
 }
+
+GET("/cookies", cookies);
+response_t cookies(ctx_t* ctx) {
+	char* test = getCookie(ctx, "test");
+	
+	setCookie(ctx, "test", "foobar", cookieSettingsNull());
+	
+	if (test == NULL) {
+		return rawResponse(200, "cookie not set");
+	} else if (strcmp(test, "foobar") == 0) {
+		free(test);
+		return rawResponse(200, "cookie value correct");
+	} else {
+		free(test);
+		return rawResponse(200, "cookie value incorrect");
+	}
+}
