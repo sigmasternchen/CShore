@@ -19,21 +19,34 @@ char* getCookie(ctx_t* ctx, const char* key) {
 		return NULL;	
 	}
 	
-	char** saveptr = NULL;
+	char* saveptr = NULL;
 	char* str = cookieHeader;
 	
 	char* value = NULL;
 	
-	while((str = strtok_r(str, "; ", saveptr)) != NULL) {
+	while((str = strtok_r(str, ";", &saveptr)) != NULL) {
+		while(*str == ' ') str++;
+	
 		char* keyCandidate = str;
-		str = strtok_r(NULL, "=", saveptr);
+		
+		for (; *str != '='; str++) {
+			if (*str == '\0') {
+				str = NULL;
+				break;
+			}
+		}
+		
 		if (str == NULL) {
 			// illegal cookie definition; ignore
+			// str is already NULL
 			continue;
 		}
 		
+		*str = '\0';
+		
 		if (strcmp(keyCandidate, key) == 0) {
-			value = str;
+			value = str + 1;
+			break;
 		}
 		
 		str = NULL;
