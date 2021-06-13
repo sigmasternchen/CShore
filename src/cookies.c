@@ -64,12 +64,16 @@ int setCookie(ctx_t* ctx, const char* name, const char* value, cookieSettings_t 
 	if (settings.expires != COOKIE_NO_EXPIRES) {
 		length += 2;
 		length += strlen("Expires=");
-		length += 3 + 2 + 2 + 1 + 3 + 1 + 4 + 2 + 1 + 2 + 1 + 2 + 1 + 3;
+		length += 3 + 2 + 2 + 1 + 3 + 1 + 4 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 3;
 	}
 	if (settings.maxAge != COOKIE_NO_MAX_AGE) {
 		length += 2;
 		length += strlen("Max-Age=");
 		long tmp = settings.maxAge;
+		if (tmp <= 0) {
+			length++;
+			tmp *= -1;
+		}
 		for (; tmp > 0; tmp /= 10) length++;
 	}
 	if (settings.domain != NULL) {
