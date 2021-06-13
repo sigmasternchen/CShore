@@ -27,7 +27,7 @@ static void handler(struct request request, struct response _response) {
 		responseHeaders: headers_create()
 	};
 
-	response_t response = routerHandler(ctx);
+	response_t response = routerHandler(&ctx);
 	if (response.output == NULL) {
 		response = errorResponse(500, "route did not provide a reponse handler");
 	}
@@ -51,7 +51,7 @@ static void handler(struct request request, struct response _response) {
 		return;
 	}
 
-	response.output(out, response._userData, ctx);
+	response.output(out, response._userData, &ctx);
 
 	fclose(out);
 }

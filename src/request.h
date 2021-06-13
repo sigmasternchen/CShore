@@ -27,7 +27,7 @@ typedef struct {
 	struct headers headers;
 
 	void* _userData;
-	void (*output) (FILE* conenction, void* _userData, ctx_t ctx);
+	void (*output) (FILE* conenction, void* _userData, ctx_t* ctx);
 } response_t;
 
 typedef enum {

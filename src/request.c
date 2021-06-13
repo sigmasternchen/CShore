@@ -31,13 +31,13 @@ void setDefaultErrorFormat(errorformat_t format) {
 	errorformat = format;
 }
 
-static void rawOutputAndFree(FILE* out, void* _userData, ctx_t ctx) {
+static void rawOutputAndFree(FILE* out, void* _userData, ctx_t* ctx) {
 	fprintf(out, "%s", (char*) _userData);
 	
 	free(_userData);
 }
 
-static void rawOutput(FILE* out, void* _userData, ctx_t ctx) {
+static void rawOutput(FILE* out, void* _userData, ctx_t* ctx) {
 	fprintf(out, "%s", (const char*) _userData);
 }
 
@@ -70,7 +70,7 @@ struct statusdata {
 	const char* message;
 };
 
-static void statusOutput(FILE* out, void* _userData, ctx_t ctx) {
+static void statusOutput(FILE* out, void* _userData, ctx_t* ctx) {
 		struct statusdata* data = (struct statusdata*) _userData;
 		
 		const char* statusString = getStatusStrings(data->status).statusString;
@@ -80,7 +80,7 @@ static void statusOutput(FILE* out, void* _userData, ctx_t ctx) {
 			"status", json_long(data->status),
 			"error", json_string(statusString),
 			"message", json_string(data->message),
-			"path", json_string(ctx.path)
+			"path", json_string(ctx->path)
 		);
 		free(data);
 		free(tmp);
@@ -126,7 +126,7 @@ response_t errorResponse(int status, const char* message) {
 	return statusResponse(status, message);
 }
 
-static void fileOutput(FILE* out, void* _userData, ctx_t ctx) {
+static void fileOutput(FILE* out, void* _userData, ctx_t* ctx) {
 	FILE* in = (FILE*) _userData;
 
 	#define READ_BUFFER_SIZE (1024)
@@ -171,7 +171,7 @@ response_t fileResponse(const char* file) {
 	return response;
 }
 
-static void jsonOutput(FILE* output, void* _userData, ctx_t ctx) {
+static void jsonOutput(FILE* output, void* _userData, ctx_t* ctx) {
 	jsonValue_t* json = (jsonValue_t*) _userData;
 	
 	char* result = json_stringify(json);

@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
 		responseHeaders: headers_create()
 	};
 
-	response_t response = routerHandler(ctx);
+	response_t response = routerHandler(&ctx);
 	if (response.output == NULL) {
 		response = errorResponse(500, "route did not provide a reponse handler");
 	}
@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
 	headers_free(&response.headers);
 	headers_free(&ctx.responseHeaders);
 
-	response.output(stdout, response._userData, ctx);
+	response.output(stdout, response._userData, &ctx);
 
 	return 0;
 }
