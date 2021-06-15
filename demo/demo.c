@@ -1,8 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <controller.h>
-#include <cookies.h>
+
+#define SESSION_PTR_TYPE const char*
+#include <sessions.h>
 
 #include "entities.h"
 
@@ -49,19 +52,21 @@ response_t template(ctx_t* ctx) {
 	return templateResponse(200, "demo.templ", "Page Title", "Overflow");
 }
 
-GET("/cookies", cookies);
-response_t cookies(ctx_t* ctx) {
-	char* test = getCookie(ctx, "test");
+GET("/sessions", sessions);
+response_t sessions(ctx_t* ctx) {
+	const char** sessiondata = session_start(ctx);
+
+	const char* output = "null\n";
 	
-	setCookie(ctx, "test", "foobar", cookieSettingsNull());
-	
-	if (test == NULL) {
-		return rawResponse(200, "cookie not set");
-	} else if (strcmp(test, "foobar") == 0) {
-		free(test);
-		return rawResponse(200, "cookie value correct");
+	if (*sessiondata == NULL) {
+		*sessiondata = "Test\n";
 	} else {
-		free(test);
-		return rawResponse(200, "cookie value incorrect");
+		output = *sessiondata;
 	}
+	
+	fprintf(stderr, "%s, %d\n", output, strlen(output));
+	
+	return rawResponse(200, output);
 }
+
+

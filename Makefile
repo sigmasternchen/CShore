@@ -1,14 +1,14 @@
 CC = gcc
 LD = gcc
 CFLAGS = -Wall -g -std=c99 -ICFloor/src/ -Ilibargo/src/ -Ilibparcival/src/ -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500
-LDFLAGS = -lpthread -lrt
+LDFLAGS = -lpthread -lrt -luuid
 
 CFLOOR_LIB = CFloor/libcfloor.a
 LIBARGO = libargo/libargo.a
 LIBPARCIVAL = libparcival/libparcival.a
 LIBS = $(CFLOOR_LIB) $(LIBARGO) $(LIBPARCIVAL)
 
-OBJS = obj/router.o obj/request.o obj/base_cfloor.o obj/base_cgi.o obj/auth.o obj/base64.o obj/common.o obj/cookies.o
+OBJS = obj/router.o obj/request.o obj/base_cfloor.o obj/base_cgi.o obj/auth.o obj/base64.o obj/common.o obj/cookies.o obj/sessions.o
 DEPS = $(OBJS:%.o=%.d)
 
 DEMO_OBJS = obj/demo.o obj/entities.tab.o obj/template.tab.o
