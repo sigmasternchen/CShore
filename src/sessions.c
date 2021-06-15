@@ -1,14 +1,19 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <string.h>
 
-#include <uuid.h>
+#include <uuid/uuid.h>
 
 #include <headers.h>
 
+// SESSION_PTR_TYPE doesn't matter for this file
+#define SESSION_PTR_TYPE int
 #include "sessions.h"
 
-struct session {
+#include "cookies.h"
+
+static struct session {
 	bool inUse;
 	uuid_t id;
 	time_t lastAccess;
@@ -20,7 +25,7 @@ static size_t sessionno = 0;
 
 int resizeSessionList() {
 	// TODO synchronization
-	struct session* tmp = realloc(session, sizeof(struct session) * (sessionno + SESSION_BLOCK_SIZE));
+	struct session* tmp = realloc(sessions, sizeof(struct session) * (sessionno + SESSION_BLOCK_SIZE));
 	if (tmp == NULL) {
 		return -1;	
 	}
@@ -41,6 +46,7 @@ struct session* newSession(size_t size) {
 				sessions[i].inUse = false;
 				return NULL;
 			}
+			memset(sessions[i].data, 0, size);
 			return &(sessions[i]);
 		}
 	}
@@ -94,6 +100,11 @@ void* _session_start(ctx_t* ctx, const char* cookie, size_t size) {
 		}
 		
 		uuid_generate_time(session->id);
+		
+		char buffer[36 + 1];
+		uuid_unparse(session->id, buffer);
+		
+		setCookie(ctx, cookie, buffer, cookieSettingsNull());
 	}
 	
 	session->lastAccess = time(NULL);

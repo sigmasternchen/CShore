@@ -2,7 +2,7 @@
 #define SESSIONS_H_
 
 #ifndef SESSION_PTR_TYPE
-	#warning "session ptr type not defined"
+	#pragma GCC warning "session ptr type not defined"
 	#define SESSION_PTR_TYPE int
 #endif
 
@@ -18,6 +18,6 @@
 
 void* _session_start(ctx_t*, const char*, size_t);
 
-#define session_start(c) (SESSION_PTR_TYPE*) _session_start(c, SESSION_COOKIE_NAME, sizeof(SESSION_PTR_TYPE))
+#define session_start(c) ((SESSION_PTR_TYPE*) _session_start(c, SESSION_COOKIE_NAME, sizeof(SESSION_PTR_TYPE)))
 
 #endif
