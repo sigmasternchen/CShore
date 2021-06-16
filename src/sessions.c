@@ -5,6 +5,8 @@
 
 #include <uuid/uuid.h>
 
+#include <pthread.h>
+
 #include <headers.h>
 
 // SESSION_PTR_TYPE doesn't matter for this file
@@ -20,26 +22,28 @@ static struct session {
 	void* data;
 }* sessions = NULL;
 static size_t sessionno = 0;
+static pthread_mutex_t globalLock = PTHREAD_MUTEX_INITIALIZER;
 
 #define SESSION_BLOCK_SIZE (128)
 
 int resizeSessionList() {
-	// TODO synchronization
 	struct session* tmp = realloc(sessions, sizeof(struct session) * (sessionno + SESSION_BLOCK_SIZE));
 	if (tmp == NULL) {
 		return -1;	
 	}
-	memset(tmp + sizeof(struct session) * sessionno, 0, sizeof(struct session) * SESSION_BLOCK_SIZE);
+	for (size_t i = 0; i < SESSION_BLOCK_SIZE; i++) {
+		struct session* session = &tmp[sessionno + i];
+		session->inUse = 0;
+	} 
 	sessions = tmp;
 	sessionno += SESSION_BLOCK_SIZE;
-	
+
 	return 0;
 }
 
 struct session* newSession(size_t size) {
 	for (size_t i = 0; i < sessionno; i++) {
 		if (!sessions[i].inUse) {
-			// TODO synchronization
 			sessions[i].inUse = true;
 			sessions[i].data = malloc(size);
 			if (sessions[i].data == NULL) {
@@ -89,6 +93,8 @@ void* _session_start(ctx_t* ctx, const char* cookie, size_t size) {
 		isValid = false;
 	}
 	
+	pthread_mutex_lock(&globalLock);
+	
 	if (isValid) {
 		session = findSession(id);
 	}
@@ -106,6 +112,8 @@ void* _session_start(ctx_t* ctx, const char* cookie, size_t size) {
 		
 		setCookie(ctx, cookie, buffer, cookieSettingsNull());
 	}
+	
+	pthread_mutex_unlock(&globalLock);
 	
 	session->lastAccess = time(NULL);
 	
