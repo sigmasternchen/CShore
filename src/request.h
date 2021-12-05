@@ -11,6 +11,14 @@
 
 #define NEXT_RESPONSE_STATUS (0)
 
+struct session_ctx {
+    void* session;
+    time_t accessTime;
+    void* data;
+};
+
+#define EMPTY_SESSION_CTX ((struct session_ctx) {.session = NULL})
+
 typedef struct {
 	method_t method;
 	const char* path;
@@ -18,6 +26,9 @@ typedef struct {
 	const char* peerAddr;
 	int peerPort;
 	struct auth auth;
+	struct headers requestHeaders;
+	struct headers responseHeaders;
+    struct session_ctx session;
 } ctx_t;
 
 typedef struct {
@@ -25,7 +36,7 @@ typedef struct {
 	struct headers headers;
 
 	void* _userData;
-	void (*output) (FILE* conenction, void* _userData, ctx_t ctx);
+	void (*output) (FILE* conenction, void* _userData, ctx_t* ctx);
 } response_t;
 
 typedef enum {

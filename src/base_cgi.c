@@ -96,14 +96,14 @@ const char* or(const char* v1, const char* v2) {
 	}
 }
 
+void session_end(ctx_t*);
+
 int main(int argc, char** argv) {
 	struct headers headers = headers_create();
 	if (setHttpHeaders(&headers)) {
 		fprintf(stderr, "%s: %s\n", argv[0], strerror(errno));
 		exit(1);
 	}
-	
-	// TODO use request headers
 
 	ctx_t ctx = {
 		method: getMethod(or(getenv("REQUEST_METHOD"), "GET")),
@@ -111,25 +111,32 @@ int main(int argc, char** argv) {
 		queryString: or(getenv("QUERY_STRING"), ""),
 		peerAddr: or(getenv("REMOTE_ADDR"), ""),
 		peerPort: 0, // TODO 
-		auth: getAuthData(request.headers)
+		auth: getAuthData(request.headers),
+		requestHeaders: headers,
+		responseHeaders: headers_create(),
+		session: EMPTY_SESSION_CTX,
 	};
-	
-	headers_free(&headers);
 
-	response_t response = routerHandler(ctx);
+	response_t response = routerHandler(&ctx);
 	if (response.output == NULL) {
 		response = errorResponse(500, "route did not provide a reponse handler");
 	}
 	
+	headers_free(&headers);
+	
+	headers_merge(&ctx.responseHeaders, &response.headers);
+	
 	freeAuthData(ctx.auth);
+	session_end(&ctx);
 
 	printf("Status: %d\n\r", response.status);
-	headers_dump(&response.headers, stdout);
+	headers_dump(&ctx.responseHeaders, stdout);
 	printf("\n\r");
 	
 	headers_free(&response.headers);
+	headers_free(&ctx.responseHeaders);
 
-	response.output(stdout, response._userData, ctx);
+	response.output(stdout, response._userData, &ctx);
 
 	return 0;
 }

@@ -15,4 +15,6 @@ typedef enum method method_t;
 #define HTTP_CONNECT (CONNECT)
 #define HTTP_PATCH (PATCH)
 
+void headers_merge(struct headers*, struct headers*);
+
 #endif

@@ -15,6 +15,8 @@
 
 struct networkingConfig netConfig;
 
+void session_end(ctx_t*);
+
 static void handler(struct request request, struct response _response) {
 	ctx_t ctx = {
 		method: request.metaData.method,
@@ -22,18 +24,25 @@ static void handler(struct request request, struct response _response) {
 		queryString: request.metaData.queryString,
 		peerAddr: request.peer.addr,
 		peerPort: request.peer.port,
-		auth: getAuthData(request.headers)
+		auth: getAuthData(request.headers),
+		requestHeaders: *request.headers,
+		responseHeaders: headers_create(),
+		session: EMPTY_SESSION_CTX,
 	};
 
-	response_t response = routerHandler(ctx);
+	response_t response = routerHandler(&ctx);
 	if (response.output == NULL) {
 		response = errorResponse(500, "route did not provide a reponse handler");
 	}
 	
 	freeAuthData(ctx.auth);
+	session_end(&ctx);
+	
+	headers_merge(&ctx.responseHeaders, &response.headers);
 
-	int fd = _response.sendHeader(response.status, &response.headers, &request);
+	int fd = _response.sendHeader(response.status, &ctx.responseHeaders, &request);
 	headers_free(&response.headers);
+	headers_free(&ctx.responseHeaders);
 
 	if (fd < 0) {
 		error("csite: sendHeader: %s", strerror(errno));
@@ -46,7 +55,7 @@ static void handler(struct request request, struct response _response) {
 		return;
 	}
 
-	response.output(out, response._userData, ctx);
+	response.output(out, response._userData, &ctx);
 
 	fclose(out);
 }
