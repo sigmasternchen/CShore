@@ -1,9 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
-#include <time.h>
 #include <string.h>
-
-#include <uuid/uuid.h>
 
 #include <pthread.h>
 
@@ -15,12 +12,15 @@
 
 #include "cookies.h"
 
-static struct session {
+struct session {
 	bool inUse;
 	uuid_t id;
 	time_t lastAccess;
+    time_t lastWrite;
 	void* data;
-}* sessions = NULL;
+};
+
+static struct session* sessions = NULL;
 static size_t sessionno = 0;
 static pthread_mutex_t globalLock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -51,6 +51,7 @@ struct session* newSession(size_t size) {
 				return NULL;
 			}
 			memset(sessions[i].data, 0, size);
+			sessions[i].lastWrite = 0;
 			return &(sessions[i]);
 		}
 	}
@@ -116,6 +117,45 @@ void* _session_start(ctx_t* ctx, const char* cookie, size_t size) {
 	pthread_mutex_unlock(&globalLock);
 	
 	session->lastAccess = time(NULL);
+
+	ctx->session.session = session;
+	ctx->session.accessTime = time(NULL);
+
+	void* requestSessionData = malloc(size);
+	if (requestSessionData == NULL) {
+		return NULL;
+	}
+	memcpy(requestSessionData, session->data, size);
+	ctx->session.data = requestSessionData;
 	
-	return session->data;
+	return requestSessionData;
+}
+
+int _session_update(ctx_t* ctx, size_t size) {
+	struct session_ctx* sessionCtx = &(ctx->session);
+	struct session* session = (struct session*) sessionCtx->session;
+	if (session == NULL) {
+		return ERROR_NO_SESSION;
+	}
+
+	pthread_mutex_lock(&globalLock);
+
+	if (session->lastWrite > sessionCtx->accessTime) {
+		pthread_mutex_unlock(&globalLock);
+		return ERROR_CONCURRENT_SESSION;
+	}
+
+	session->lastWrite = time(NULL);
+	sessionCtx->accessTime = session->lastWrite;
+	memcpy(session->data, sessionCtx->data, size);
+
+	pthread_mutex_unlock(&globalLock);
+
+	return 0;
+}
+
+void session_end(ctx_t* ctx) {
+	if (ctx->session.session != NULL) {
+		free(ctx->session.data);
+	}
 }

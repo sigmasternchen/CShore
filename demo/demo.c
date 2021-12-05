@@ -60,6 +60,7 @@ response_t sessions(ctx_t* ctx) {
 	
 	if (*sessiondata == NULL) {
 		*sessiondata = "Test\n";
+		session_update(ctx);
 	} else {
 		output = *sessiondata;
 	}

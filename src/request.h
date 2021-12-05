@@ -11,6 +11,14 @@
 
 #define NEXT_RESPONSE_STATUS (0)
 
+struct session_ctx {
+    void* session;
+    time_t accessTime;
+    void* data;
+};
+
+#define EMPTY_SESSION_CTX ((struct session_ctx) {.session = NULL})
+
 typedef struct {
 	method_t method;
 	const char* path;
@@ -20,6 +28,7 @@ typedef struct {
 	struct auth auth;
 	struct headers requestHeaders;
 	struct headers responseHeaders;
+    struct session_ctx session;
 } ctx_t;
 
 typedef struct {

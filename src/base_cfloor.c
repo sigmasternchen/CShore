@@ -15,6 +15,8 @@
 
 struct networkingConfig netConfig;
 
+void session_end(ctx_t*);
+
 static void handler(struct request request, struct response _response) {
 	ctx_t ctx = {
 		method: request.metaData.method,
@@ -24,7 +26,8 @@ static void handler(struct request request, struct response _response) {
 		peerPort: request.peer.port,
 		auth: getAuthData(request.headers),
 		requestHeaders: *request.headers,
-		responseHeaders: headers_create()
+		responseHeaders: headers_create(),
+		session: EMPTY_SESSION_CTX,
 	};
 
 	response_t response = routerHandler(&ctx);
@@ -33,6 +36,7 @@ static void handler(struct request request, struct response _response) {
 	}
 	
 	freeAuthData(ctx.auth);
+	session_end(&ctx);
 	
 	headers_merge(&ctx.responseHeaders, &response.headers);
 

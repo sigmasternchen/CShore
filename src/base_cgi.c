@@ -96,6 +96,8 @@ const char* or(const char* v1, const char* v2) {
 	}
 }
 
+void session_end(ctx_t*);
+
 int main(int argc, char** argv) {
 	struct headers headers = headers_create();
 	if (setHttpHeaders(&headers)) {
@@ -111,7 +113,8 @@ int main(int argc, char** argv) {
 		peerPort: 0, // TODO 
 		auth: getAuthData(request.headers),
 		requestHeaders: headers,
-		responseHeaders: headers_create()
+		responseHeaders: headers_create(),
+		session: EMPTY_SESSION_CTX,
 	};
 
 	response_t response = routerHandler(&ctx);
@@ -124,6 +127,7 @@ int main(int argc, char** argv) {
 	headers_merge(&ctx.responseHeaders, &response.headers);
 	
 	freeAuthData(ctx.auth);
+	session_end(&ctx);
 
 	printf("Status: %d\n\r", response.status);
 	headers_dump(&ctx.responseHeaders, stdout);
